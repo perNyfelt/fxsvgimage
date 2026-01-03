@@ -2,9 +2,43 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
    <modelVersion>4.0.0</modelVersion>
 
-   <groupId>org.girod</groupId>
+   <!--groupId>org.girod</groupId-->
    <artifactId>fxsvgimage</artifactId>
-   <version>1.4</version>
+   <version>1.4.1</version>
+   <name>fxsvgimage</name>
+   <description>A small self-sufficient library which allows to convert a SVG file to a JavaFX Node tree or an Image (no dependencies)</description>
+
+   <url>https://github.com/Alipsa/gsvg</url>
+
+   <licenses>
+      <license>
+         <name>BSD 3-Clause License</name>
+         <url>https://raw.githubusercontent.com/hervegirod/fxsvgimage/refs/heads/main/LICENSE</url>
+         <distribution>repo</distribution>
+      </license>
+   </licenses>
+
+   <developers>
+      <developer>
+          <id>herveGirod</id>
+          <name>Hervé Girod</name>
+      </developer>
+      <developer>
+         <id>perNyfelt</id>
+         <name>Per Nyfelt</name>
+      </developer>
+      <developer>
+         <id>pascalgn</id>
+         <name>Pascal</name>
+      </developer>
+   </developers>
+
+   <scm>
+      <url>https://github.com/perNyfelt/fxsvgimage/tree/main/</url>
+      <connection>scm:git:https://github.com/perNyfelt/fxsvgimage.git</connection>
+      <developerConnection>scm:git:https://github.com/perNyfelt/fxsvgimage.git</developerConnection>
+      <tag>HEAD</tag>
+   </scm>
 
    <properties>
       <maven.compiler.source>1.8</maven.compiler.source>
