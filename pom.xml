@@ -9,7 +9,7 @@
    <name>fxsvgimage</name>
    <description>A small self-sufficient library which allows to convert a SVG file to a JavaFX Node tree or an Image (no dependencies)</description>
 
-   <url>https://github.com/Alipsa/gsvg</url>
+   <url>https://github.com/perNyfelt/fxsvgimage/tree/maven_central</url>
 
    <licenses>
       <license>
@@ -35,10 +35,9 @@
    </developers>
 
    <scm>
-      <url>https://github.com/perNyfelt/fxsvgimage/tree/main/</url>
+      <url>https://github.com/perNyfelt/fxsvgimage/tree/maven_central/</url>
       <connection>scm:git:https://github.com/perNyfelt/fxsvgimage.git</connection>
       <developerConnection>scm:git:https://github.com/perNyfelt/fxsvgimage.git</developerConnection>
-      <tag>HEAD</tag>
    </scm>
 
    <properties>
