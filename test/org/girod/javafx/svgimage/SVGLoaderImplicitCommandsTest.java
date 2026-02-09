@@ -115,6 +115,63 @@ public class SVGLoaderImplicitCommandsTest {
    }
 
    /**
+    * Test that extra parameters after H are split into repeated H commands.
+    */
+   @Test
+   public void testImplicitRepeatedHorizontalLineTo() {
+      System.out.println("SVGLoaderImplicitCommandsTest : testImplicitRepeatedHorizontalLineTo");
+      SVGPathParser parser = new SVGPathParser();
+      Viewport viewport = new Viewport();
+
+      parser.parse("M0 0 H10 20 30", viewport);
+      assertEquals("M 0.0 0.0 H 10.0 H 20.0 H 30.0", parser.getContent());
+   }
+
+   /**
+    * Test that extra parameters after V are split into repeated V commands.
+    */
+   @Test
+   public void testImplicitRepeatedVerticalLineTo() {
+      System.out.println("SVGLoaderImplicitCommandsTest : testImplicitRepeatedVerticalLineTo");
+      SVGPathParser parser = new SVGPathParser();
+      Viewport viewport = new Viewport();
+
+      parser.parse("M0 0 V10 20 30", viewport);
+      assertEquals("M 0.0 0.0 V 10.0 V 20.0 V 30.0", parser.getContent());
+   }
+
+   /**
+    * Test that repeated arc (A) parameter groups are split correctly.
+    * Arc has 7 parameters per group with mixed converters (lengths, angle, flags),
+    * so this exercises modulo indexing across varying converter types.
+    */
+   @Test
+   public void testImplicitRepeatedArc() {
+      System.out.println("SVGLoaderImplicitCommandsTest : testImplicitRepeatedArc");
+      SVGPathParser parser = new SVGPathParser();
+      Viewport viewport = new Viewport();
+
+      // Two arc groups: A rx ry rotation large-arc sweep x y (repeated)
+      parser.parse("M0 0 A25 50 0 0 1 100 100 30 60 45 1 0 200 200", viewport);
+      assertEquals("M 0.0 0.0 A 25.0 50.0 0.0 0 1 100.0 100.0 A 30.0 60.0 45.0 1 0 200.0 200.0",
+              parser.getContent());
+   }
+
+   /**
+    * Test that repeated relative arc (a) parameter groups are split correctly.
+    */
+   @Test
+   public void testImplicitRepeatedRelativeArc() {
+      System.out.println("SVGLoaderImplicitCommandsTest : testImplicitRepeatedRelativeArc");
+      SVGPathParser parser = new SVGPathParser();
+      Viewport viewport = new Viewport();
+
+      parser.parse("M0 0 a25 50 0 0 1 100 100 30 60 45 1 0 200 200", viewport);
+      assertEquals("M 0.0 0.0 a 25.0 50.0 0.0 0 1 100.0 100.0 a 30.0 60.0 45.0 1 0 200.0 200.0",
+              parser.getContent());
+   }
+
+   /**
     * Test loading an SVG with implicit LineTo commands after MoveTo.
     * The path "M784-120 532-372..." has extra coordinate pairs after M
     * that should be treated as implicit LineTo commands.

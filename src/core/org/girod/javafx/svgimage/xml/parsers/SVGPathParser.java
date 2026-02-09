@@ -395,18 +395,21 @@ public class SVGPathParser {
 
       if (expectedCount == 0) {
          if (!numbers.isEmpty()) {
-            throw new IllegalArgumentException("Unexpected parameters after CLOSEPATH command");
+            throw new IllegalArgumentException("Unexpected parameters for command "
+                    + commandType.getSymbol() + ": got " + numbers.size() + ", expected 0");
          }
          return new double[0];
       }
 
       if (numbers.isEmpty()) {
-         throw new IllegalArgumentException("Missing parameters for command " + commandType.getSymbol()
-                 + ", expected " + expectedCount);
+         throw new IllegalArgumentException("Missing parameters for command "
+                 + commandType.getSymbol() + ": got 0, expected " + expectedCount);
       }
 
       if (numbers.size() % expectedCount != 0) {
-         throw new IllegalArgumentException("Invalid number of parameters for command, expected multiple of " + expectedCount);
+         throw new IllegalArgumentException("Invalid number of parameters for command "
+                 + commandType.getSymbol() + ": got " + numbers.size()
+                 + ", expected a multiple of " + expectedCount);
       }
 
       double[] result = new double[numbers.size()];
