@@ -44,6 +44,7 @@ import java.net.URL;
 import javafx.collections.ObservableList;
 import javafx.scene.Node;
 import javafx.scene.shape.SVGPath;
+import org.girod.javafx.svgimage.xml.parsers.SVGPathParser;
 
 /**
  * Test that SVG paths with implicit repeated commands are parsed correctly.
@@ -74,6 +75,46 @@ public class SVGLoaderImplicitCommandsTest {
    }
 
    /**
+    * Test that extra coordinate pairs after M are split into an implicit L command.
+    * Uses SVGPathParser directly with a non-scaling viewport for predictable output.
+    */
+   @Test
+   public void testImplicitLineToAfterMoveToContent() {
+      System.out.println("SVGLoaderImplicitCommandsTest : testImplicitLineToAfterMoveToContent");
+      SVGPathParser parser = new SVGPathParser();
+      Viewport viewport = new Viewport();
+
+      parser.parse("M10 20 30 40", viewport);
+      assertEquals("M 10.0 20.0 L 30.0 40.0", parser.getContent());
+   }
+
+   /**
+    * Test that extra coordinate pairs after m are split into an implicit l command.
+    */
+   @Test
+   public void testImplicitRelativeLineToAfterMoveTo() {
+      System.out.println("SVGLoaderImplicitCommandsTest : testImplicitRelativeLineToAfterMoveTo");
+      SVGPathParser parser = new SVGPathParser();
+      Viewport viewport = new Viewport();
+
+      parser.parse("m10 20 30 40", viewport);
+      assertEquals("m 10.0 20.0 l 30.0 40.0", parser.getContent());
+   }
+
+   /**
+    * Test that extra coordinate pairs after l are split into repeated l commands.
+    */
+   @Test
+   public void testImplicitRepeatedLineTo() {
+      System.out.println("SVGLoaderImplicitCommandsTest : testImplicitRepeatedLineTo");
+      SVGPathParser parser = new SVGPathParser();
+      Viewport viewport = new Viewport();
+
+      parser.parse("M0 0 l10 20 30 40", viewport);
+      assertEquals("M 0.0 0.0 l 10.0 20.0 l 30.0 40.0", parser.getContent());
+   }
+
+   /**
     * Test loading an SVG with implicit LineTo commands after MoveTo.
     * The path "M784-120 532-372..." has extra coordinate pairs after M
     * that should be treated as implicit LineTo commands.
@@ -90,6 +131,16 @@ public class SVGLoaderImplicitCommandsTest {
       assertEquals("Must have one child", 1, children.size());
       Node child = children.get(0);
       assertTrue("Child must be an SVGPath", child instanceof SVGPath);
+
+      String content = ((SVGPath) child).getContent();
+      assertNotNull("SVGPath content should not be null", content);
+      assertTrue("Content should contain implicit L command from M's extra pair",
+              content.contains("L "));
+      // The original path has "l252 252-56 56" which should split into two l commands
+      int firstL = content.indexOf("l ");
+      assertTrue("Content should contain a relative l command", firstL >= 0);
+      int secondL = content.indexOf("l ", firstL + 1);
+      assertTrue("Content should contain a second l command from implicit repeat", secondL > firstL);
    }
 
    /**
@@ -109,5 +160,10 @@ public class SVGLoaderImplicitCommandsTest {
       assertEquals("Must have one child", 1, children.size());
       Node child = children.get(0);
       assertTrue("Child must be an SVGPath", child instanceof SVGPath);
+
+      String content = ((SVGPath) child).getContent();
+      assertNotNull("SVGPath content should not be null", content);
+      assertTrue("Content should contain implicit L command from M's extra pair",
+              content.contains("L "));
    }
 }

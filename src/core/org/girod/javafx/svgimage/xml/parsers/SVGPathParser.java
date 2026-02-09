@@ -400,6 +400,11 @@ public class SVGPathParser {
          return new double[0];
       }
 
+      if (numbers.isEmpty()) {
+         throw new IllegalArgumentException("Missing parameters for command " + commandType.getSymbol()
+                 + ", expected " + expectedCount);
+      }
+
       if (numbers.size() % expectedCount != 0) {
          throw new IllegalArgumentException("Invalid number of parameters for command, expected multiple of " + expectedCount);
       }
