@@ -322,10 +322,10 @@ public class SVGPathParser {
 
          builder = new StringBuilder("");
          builder.append(id);
-         for (int i = 0; i < parameters.length; i++) {
+         for (int i = 0; i < type.paramCount; i++) {
             double parameter = parameters[i];
             builder.append(" ");
-            builder.append(type.getParameterConverter(i % type.paramCount) == ParameterConverter.PARSE_NOT ? (int) parameter : Double.toString(parameter));
+            builder.append(type.getParameterConverter(i) == ParameterConverter.PARSE_NOT ? (int) parameter : Double.toString(parameter));
          }
 
          return builder.toString();
@@ -353,7 +353,31 @@ public class SVGPathParser {
          CommandType cmd = CommandType.fromSymbol(cmdChar);
 
          double[] parameters = parseParameters(cmd, viewport, params, cmd.getParamCount());
-         commands.add(new PathCommand(cmdChar, cmd, parameters, isRelative));
+         int paramCount = cmd.getParamCount();
+
+         if (paramCount == 0 || parameters.length == paramCount) {
+            commands.add(new PathCommand(cmdChar, cmd, parameters, isRelative));
+         } else {
+            // Split repeated parameter groups into separate commands.
+            double[] firstGroup = new double[paramCount];
+            System.arraycopy(parameters, 0, firstGroup, 0, paramCount);
+            commands.add(new PathCommand(cmdChar, cmd, firstGroup, isRelative));
+
+            // Per SVG spec, extra coordinate pairs after M/m become implicit L/l commands.
+            // For all other commands, extra groups repeat the same command.
+            CommandType repeatCmd = cmd;
+            char repeatChar = cmdChar;
+            if (cmd == CommandType.MOVETO) {
+               repeatCmd = CommandType.LINETO;
+               repeatChar = isRelative ? 'l' : 'L';
+            }
+
+            for (int offset = paramCount; offset < parameters.length; offset += paramCount) {
+               double[] group = new double[paramCount];
+               System.arraycopy(parameters, offset, group, 0, paramCount);
+               commands.add(new PathCommand(repeatChar, repeatCmd, group, isRelative));
+            }
+         }
       }
 
       return commands;
@@ -369,7 +393,14 @@ public class SVGPathParser {
          numbers.add(numberMatcher.group());
       }
 
-      if (expectedCount > 0 && numbers.size() % expectedCount != 0) {
+      if (expectedCount == 0) {
+         if (!numbers.isEmpty()) {
+            throw new IllegalArgumentException("Unexpected parameters after CLOSEPATH command");
+         }
+         return new double[0];
+      }
+
+      if (numbers.size() % expectedCount != 0) {
          throw new IllegalArgumentException("Invalid number of parameters for command, expected multiple of " + expectedCount);
       }
 
