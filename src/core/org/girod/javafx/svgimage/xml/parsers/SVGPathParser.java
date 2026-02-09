@@ -322,10 +322,10 @@ public class SVGPathParser {
 
          builder = new StringBuilder("");
          builder.append(id);
-         for (int i = 0; i < type.paramCount; i++) {
+         for (int i = 0; i < parameters.length; i++) {
             double parameter = parameters[i];
             builder.append(" ");
-            builder.append(type.getParameterConverter(i) == ParameterConverter.PARSE_NOT ? (int) parameter : Double.toString(parameter));
+            builder.append(type.getParameterConverter(i % type.paramCount) == ParameterConverter.PARSE_NOT ? (int) parameter : Double.toString(parameter));
          }
 
          return builder.toString();
@@ -378,7 +378,7 @@ public class SVGPathParser {
          String number;
 
          number = numbers.get(i);
-         switch (commandType.getParameterConverter(i)) {
+         switch (commandType.getParameterConverter(i % expectedCount)) {
             case PARSE_DOUBLE_PROTECTED:
                result[i] = ParserUtils.parseDoubleProtected(number);
                break;
