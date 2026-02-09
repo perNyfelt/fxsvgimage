@@ -352,7 +352,7 @@ public class SVGPathParser {
          boolean isRelative = Character.isLowerCase(cmdChar);
          CommandType cmd = CommandType.fromSymbol(cmdChar);
 
-         double[] parameters = parseParameters(cmd, viewport, params, cmd.getParamCount());
+         double[] parameters = parseParameters(cmdChar, cmd, viewport, params, cmd.getParamCount());
          int paramCount = cmd.getParamCount();
 
          if (paramCount == 0 || parameters.length == paramCount) {
@@ -386,7 +386,7 @@ public class SVGPathParser {
    /**
     * Parses a string of parameters into a double array, handling optional units.
     */
-   private double[] parseParameters(CommandType commandType, Viewport viewport, String params, int expectedCount) {
+   private double[] parseParameters(char cmdChar, CommandType commandType, Viewport viewport, String params, int expectedCount) {
       List<String> numbers = new ArrayList<>();
       Matcher numberMatcher = NUMBER_PATTERN.matcher(params);
       while (numberMatcher.find()) {
@@ -396,19 +396,19 @@ public class SVGPathParser {
       if (expectedCount == 0) {
          if (!numbers.isEmpty()) {
             throw new IllegalArgumentException("Unexpected parameters for command "
-                    + commandType.getSymbol() + ": got " + numbers.size() + ", expected 0");
+                    + cmdChar + ": got " + numbers.size() + ", expected 0");
          }
          return new double[0];
       }
 
       if (numbers.isEmpty()) {
          throw new IllegalArgumentException("Missing parameters for command "
-                 + commandType.getSymbol() + ": got 0, expected " + expectedCount);
+                 + cmdChar + ": got 0, expected " + expectedCount);
       }
 
       if (numbers.size() % expectedCount != 0) {
          throw new IllegalArgumentException("Invalid number of parameters for command "
-                 + commandType.getSymbol() + ": got " + numbers.size()
+                 + cmdChar + ": got " + numbers.size()
                  + ", expected a multiple of " + expectedCount);
       }
 
