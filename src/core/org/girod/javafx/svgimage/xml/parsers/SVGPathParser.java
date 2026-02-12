@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.girod.javafx.svgimage.Viewport;
 import javafx.geometry.Point2D;
@@ -384,7 +385,7 @@ public class SVGPathParser {
    }
 
    /**
-    * Parses a string of parameters into a double array, handling optional units.
+    * Parses a string of parameters into a stream of double arrays (parameters sets), handling optional units.
     */
    private double[] parseParameters(char cmdChar, CommandType commandType, Viewport viewport, String params, int expectedCount) {
       List<String> numbers = new ArrayList<>();
@@ -412,28 +413,29 @@ public class SVGPathParser {
                  + ", expected a multiple of " + expectedCount);
       }
 
-      double[] result = new double[numbers.size()];
-      for (int i = 0; i < numbers.size(); i++) {
-         String number;
+      int countOfSets = numbers.size() / expectedCount;
+      if (countOfSets < 1) {
+         throw new IllegalArgumentException("Invalid number of parameters for command, expected multiple of " + expectedCount);
+      }
+
+      return IntStream.range(0, countOfSets)
+              .mapToObj(setIndex -> parseParametersSet(commandType, viewport, setIndex, expectedCount, numbers));
+   }
 
          number = numbers.get(i);
          switch (commandType.getParameterConverter(i % expectedCount)) {
             case PARSE_DOUBLE_PROTECTED:
-               result[i] = ParserUtils.parseDoubleProtected(number);
-               break;
+               return ParserUtils.parseDoubleProtected(number);
             case PARSE_LENGTH_HEIGHT:
-               result[i] = LengthParser.parseLength(number, false, viewport);
-               break;
+               return LengthParser.parseLength(number, false, viewport);
             case PARSE_LENGTH_WIDTH:
-               result[i] = LengthParser.parseLength(number, true, viewport);
-               break;
+               return LengthParser.parseLength(number, true, viewport);
             case PARSE_NOT:
-               result[i] = Double.parseDouble(numbers.get(i));
-               break;
+               return Double.parseDouble(number);
             default:
-               break;
+               return 0D;
          }
-      }
-      return result;
+      }).toArray();
    }
+
 }
