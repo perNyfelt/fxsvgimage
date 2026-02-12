@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.girod.javafx.svgimage.Viewport;
 import javafx.geometry.Point2D;
@@ -352,17 +353,22 @@ public class SVGPathParser {
          boolean isRelative = Character.isLowerCase(cmdChar);
          CommandType cmd = CommandType.fromSymbol(cmdChar);
 
-         double[] parameters = parseParameters(cmd, viewport, params, cmd.getParamCount());
-         commands.add(new PathCommand(cmdChar, cmd, parameters, isRelative));
+         parseParameters(cmd, viewport, params, cmd.getParamCount())
+                 .map(parameters -> new PathCommand(cmdChar, cmd, parameters, isRelative))
+                 .forEach(commands::add);
       }
 
       return commands;
    }
 
    /**
-    * Parses a string of parameters into a double array, handling optional units.
+    * Parses a string of parameters into a stream of double arrays (parameters sets), handling optional units.
     */
-   private double[] parseParameters(CommandType commandType, Viewport viewport, String params, int expectedCount) {
+   private Stream<double[]> parseParameters(CommandType commandType, Viewport viewport, String params, int expectedCount) {
+      if (expectedCount == 0) {
+         return Stream.empty();
+      }
+
       List<String> numbers = new ArrayList<>();
       Matcher numberMatcher = NUMBER_PATTERN.matcher(params);
       while (numberMatcher.find()) {
@@ -373,28 +379,42 @@ public class SVGPathParser {
          throw new IllegalArgumentException("Invalid number of parameters for command, expected multiple of " + expectedCount);
       }
 
-      double[] result = new double[numbers.size()];
-      for (int i = 0; i < numbers.size(); i++) {
-         String number;
-
-         number = numbers.get(i);
-         switch (commandType.getParameterConverter(i)) {
-            case PARSE_DOUBLE_PROTECTED:
-               result[i] = ParserUtils.parseDoubleProtected(number);
-               break;
-            case PARSE_LENGTH_HEIGHT:
-               result[i] = LengthParser.parseLength(number, false, viewport);
-               break;
-            case PARSE_LENGTH_WIDTH:
-               result[i] = LengthParser.parseLength(number, true, viewport);
-               break;
-            case PARSE_NOT:
-               result[i] = Double.parseDouble(numbers.get(i));
-               break;
-            default:
-               break;
-         }
+      int countOfSets = numbers.size() / expectedCount;
+      if (countOfSets < 1) {
+         throw new IllegalArgumentException("Invalid number of parameters for command, expected multiple of " + expectedCount);
       }
-      return result;
+
+      return IntStream.range(0, countOfSets)
+              .mapToObj(setIndex -> parseParametersSet(commandType, viewport, setIndex, expectedCount, numbers));
    }
+
+   /**
+    * Parses a list of parameters/numbers into a double array, handling optional units.
+    */
+   private double[] parseParametersSet(
+         CommandType commandType,
+         Viewport viewport,
+         int setIndex,
+         int expectedCount,
+         List<String> numbers
+   ) {
+      return IntStream.range(0, expectedCount).mapToDouble(indexInSet -> {
+         int numberIndex = setIndex * expectedCount + indexInSet;
+         String number = numbers.get(numberIndex);
+
+         switch (commandType.getParameterConverter(indexInSet)) {
+            case PARSE_DOUBLE_PROTECTED:
+               return ParserUtils.parseDoubleProtected(number);
+            case PARSE_LENGTH_HEIGHT:
+               return LengthParser.parseLength(number, false, viewport);
+            case PARSE_LENGTH_WIDTH:
+               return LengthParser.parseLength(number, true, viewport);
+            case PARSE_NOT:
+               return Double.parseDouble(number);
+            default:
+               return 0D;
+         }
+      }).toArray();
+   }
+
 }
