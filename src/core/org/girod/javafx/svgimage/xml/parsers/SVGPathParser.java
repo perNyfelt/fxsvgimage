@@ -81,7 +81,7 @@ public class SVGPathParser {
 
          /*
          Removed because the assert lead to exceptions in some valid real-world use cases
-         */
+          */
          //assert this.numberConverters.length != paramCount : "The paramcount should be the same as the length of the number converter array";
       }
 
@@ -127,7 +127,7 @@ public class SVGPathParser {
     */
    public SVGPathParser() {
    }
-   
+
    /**
     * Parse a path content.
     *
@@ -144,7 +144,7 @@ public class SVGPathParser {
       path.setContent(getContent());
       listPath.add(path);
       return listPath;
-   }   
+   }
 
    /**
     * Gets the content string after the length has been resolved and the viewport has been taken into account.
@@ -392,11 +392,11 @@ public class SVGPathParser {
     * Parses a list of parameters/numbers into a double array, handling optional units.
     */
    private double[] parseParametersSet(
-         CommandType commandType,
-         Viewport viewport,
-         int setIndex,
-         int expectedCount,
-         List<String> numbers
+           CommandType commandType,
+           Viewport viewport,
+           int setIndex,
+           int expectedCount,
+           List<String> numbers
    ) {
       return IntStream.range(0, expectedCount).mapToDouble(indexInSet -> {
          int numberIndex = setIndex * expectedCount + indexInSet;
