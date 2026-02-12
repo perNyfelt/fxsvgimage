@@ -352,8 +352,32 @@ public class SVGPathParser {
          boolean isRelative = Character.isLowerCase(cmdChar);
          CommandType cmd = CommandType.fromSymbol(cmdChar);
 
-         double[] parameters = parseParameters(cmd, viewport, params, cmd.getParamCount());
-         commands.add(new PathCommand(cmdChar, cmd, parameters, isRelative));
+         double[] parameters = parseParameters(cmdChar, cmd, viewport, params, cmd.getParamCount());
+         int paramCount = cmd.getParamCount();
+
+         if (paramCount == 0 || parameters.length == paramCount) {
+            commands.add(new PathCommand(cmdChar, cmd, parameters, isRelative));
+         } else {
+            // Split repeated parameter groups into separate commands.
+            double[] firstGroup = new double[paramCount];
+            System.arraycopy(parameters, 0, firstGroup, 0, paramCount);
+            commands.add(new PathCommand(cmdChar, cmd, firstGroup, isRelative));
+
+            // Per SVG spec, extra coordinate pairs after M/m become implicit L/l commands.
+            // For all other commands, extra groups repeat the same command.
+            CommandType repeatCmd = cmd;
+            char repeatChar = cmdChar;
+            if (cmd == CommandType.MOVETO) {
+               repeatCmd = CommandType.LINETO;
+               repeatChar = isRelative ? 'l' : 'L';
+            }
+
+            for (int offset = paramCount; offset < parameters.length; offset += paramCount) {
+               double[] group = new double[paramCount];
+               System.arraycopy(parameters, offset, group, 0, paramCount);
+               commands.add(new PathCommand(repeatChar, repeatCmd, group, isRelative));
+            }
+         }
       }
 
       return commands;
@@ -362,15 +386,30 @@ public class SVGPathParser {
    /**
     * Parses a string of parameters into a double array, handling optional units.
     */
-   private double[] parseParameters(CommandType commandType, Viewport viewport, String params, int expectedCount) {
+   private double[] parseParameters(char cmdChar, CommandType commandType, Viewport viewport, String params, int expectedCount) {
       List<String> numbers = new ArrayList<>();
       Matcher numberMatcher = NUMBER_PATTERN.matcher(params);
       while (numberMatcher.find()) {
          numbers.add(numberMatcher.group());
       }
 
-      if (expectedCount > 0 && numbers.size() % expectedCount != 0) {
-         throw new IllegalArgumentException("Invalid number of parameters for command, expected multiple of " + expectedCount);
+      if (expectedCount == 0) {
+         if (!numbers.isEmpty()) {
+            throw new IllegalArgumentException("Unexpected parameters for command "
+                    + cmdChar + ": got " + numbers.size() + ", expected 0");
+         }
+         return new double[0];
+      }
+
+      if (numbers.isEmpty()) {
+         throw new IllegalArgumentException("Missing parameters for command "
+                 + cmdChar + ": got 0, expected " + expectedCount);
+      }
+
+      if (numbers.size() % expectedCount != 0) {
+         throw new IllegalArgumentException("Invalid number of parameters for command "
+                 + cmdChar + ": got " + numbers.size()
+                 + ", expected a multiple of " + expectedCount);
       }
 
       double[] result = new double[numbers.size()];
@@ -378,7 +417,7 @@ public class SVGPathParser {
          String number;
 
          number = numbers.get(i);
-         switch (commandType.getParameterConverter(i)) {
+         switch (commandType.getParameterConverter(i % expectedCount)) {
             case PARSE_DOUBLE_PROTECTED:
                result[i] = ParserUtils.parseDoubleProtected(number);
                break;
