@@ -424,6 +424,17 @@ public class SVGPathParser {
               .toArray();
    }
 
+   /**
+    * Parses a single set of parameters from a list of number strings, applying the appropriate
+    * unit conversions based on the command type.
+    *
+    * @param commandType   the SVG path command type, used to determine how each parameter is converted
+    * @param viewport      the current viewport, used for converting length values with units
+    * @param setIndex      the index of the parameter set within the overall list of parameters
+    * @param expectedCount the expected number of parameters in a single set for this command
+    * @param numbers       the complete list of parameter strings extracted from the path data
+    * @return an array of doubles representing the converted parameters for the specified set
+    */
    private double[] parseParametersSet(CommandType commandType, Viewport viewport, int setIndex, int expectedCount, List<String> numbers) {
       return IntStream.range(0, expectedCount).mapToDouble(indexInSet -> {
          int numberIndex = setIndex * expectedCount + indexInSet;
