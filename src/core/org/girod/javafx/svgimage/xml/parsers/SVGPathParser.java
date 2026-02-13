@@ -385,7 +385,7 @@ public class SVGPathParser {
    }
 
    /**
-    * Parses a string of parameters into a stream of double arrays (parameters sets), handling optional units.
+    * Parses a string of parameters into a flat double array containing all parameter sets, handling optional units.
     */
    private double[] parseParameters(char cmdChar, CommandType commandType, Viewport viewport, String params, int expectedCount) {
       List<String> numbers = new ArrayList<>();
