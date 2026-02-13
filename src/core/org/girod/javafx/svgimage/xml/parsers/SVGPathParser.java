@@ -144,7 +144,7 @@ public class SVGPathParser {
       path.setContent(getContent());
       listPath.add(path);
       return listPath;
-   }   
+   }
 
    /**
     * Gets the content string after the length has been resolved and the viewport has been taken into account.
