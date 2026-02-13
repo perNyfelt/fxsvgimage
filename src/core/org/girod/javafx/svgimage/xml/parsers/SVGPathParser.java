@@ -419,11 +419,16 @@ public class SVGPathParser {
       }
 
       return IntStream.range(0, countOfSets)
-              .mapToObj(setIndex -> parseParametersSet(commandType, viewport, setIndex, expectedCount, numbers));
+              .mapToObj(setIndex -> parseParametersSet(commandType, viewport, setIndex, expectedCount, numbers))
+              .flatMapToDouble(java.util.Arrays::stream)
+              .toArray();
    }
 
-         number = numbers.get(i);
-         switch (commandType.getParameterConverter(i % expectedCount)) {
+   private double[] parseParametersSet(CommandType commandType, Viewport viewport, int setIndex, int expectedCount, List<String> numbers) {
+      return IntStream.range(0, expectedCount).mapToDouble(indexInSet -> {
+         int numberIndex = setIndex * expectedCount + indexInSet;
+         String number = numbers.get(numberIndex);
+         switch (commandType.getParameterConverter(indexInSet)) {
             case PARSE_DOUBLE_PROTECTED:
                return ParserUtils.parseDoubleProtected(number);
             case PARSE_LENGTH_HEIGHT:
