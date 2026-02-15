@@ -81,7 +81,7 @@ public class SVGPathParser {
 
          /*
          Removed because the assert lead to exceptions in some valid real-world use cases
-          */
+         */
          //assert this.numberConverters.length != paramCount : "The paramcount should be the same as the length of the number converter array";
       }
 
@@ -127,7 +127,7 @@ public class SVGPathParser {
     */
    public SVGPathParser() {
    }
-
+   
    /**
     * Parse a path content.
     *
@@ -353,30 +353,64 @@ public class SVGPathParser {
          boolean isRelative = Character.isLowerCase(cmdChar);
          CommandType cmd = CommandType.fromSymbol(cmdChar);
 
-         parseParameters(cmd, viewport, params, cmd.getParamCount())
-                 .map(parameters -> new PathCommand(cmdChar, cmd, parameters, isRelative))
-                 .forEach(commands::add);
+         double[] parameters = parseParameters(cmdChar, cmd, viewport, params, cmd.getParamCount());
+         int paramCount = cmd.getParamCount();
+
+         if (paramCount == 0 || parameters.length == paramCount) {
+            commands.add(new PathCommand(cmdChar, cmd, parameters, isRelative));
+         } else {
+            // Split repeated parameter groups into separate commands.
+            double[] firstGroup = new double[paramCount];
+            System.arraycopy(parameters, 0, firstGroup, 0, paramCount);
+            commands.add(new PathCommand(cmdChar, cmd, firstGroup, isRelative));
+
+            // Per SVG spec, extra coordinate pairs after M/m become implicit L/l commands.
+            // For all other commands, extra groups repeat the same command.
+            CommandType repeatCmd = cmd;
+            char repeatChar = cmdChar;
+            if (cmd == CommandType.MOVETO) {
+               repeatCmd = CommandType.LINETO;
+               repeatChar = isRelative ? 'l' : 'L';
+            }
+
+            for (int offset = paramCount; offset < parameters.length; offset += paramCount) {
+               double[] group = new double[paramCount];
+               System.arraycopy(parameters, offset, group, 0, paramCount);
+               commands.add(new PathCommand(repeatChar, repeatCmd, group, isRelative));
+            }
+         }
       }
 
       return commands;
    }
 
    /**
-    * Parses a string of parameters into a stream of double arrays (parameters sets), handling optional units.
+    * Parses a string of parameters into a flat double array containing all parameter sets, handling optional units.
     */
-   private Stream<double[]> parseParameters(CommandType commandType, Viewport viewport, String params, int expectedCount) {
-      if (expectedCount == 0) {
-         return Stream.empty();
-      }
-
+   private double[] parseParameters(char cmdChar, CommandType commandType, Viewport viewport, String params, int expectedCount) {
       List<String> numbers = new ArrayList<>();
       Matcher numberMatcher = NUMBER_PATTERN.matcher(params);
       while (numberMatcher.find()) {
          numbers.add(numberMatcher.group());
       }
 
-      if (expectedCount > 0 && numbers.size() % expectedCount != 0) {
-         throw new IllegalArgumentException("Invalid number of parameters for command, expected multiple of " + expectedCount);
+      if (expectedCount == 0) {
+         if (!numbers.isEmpty()) {
+            throw new IllegalArgumentException("Unexpected parameters for command "
+                    + cmdChar + ": got " + numbers.size() + ", expected 0");
+         }
+         return new double[0];
+      }
+
+      if (numbers.isEmpty()) {
+         throw new IllegalArgumentException("Missing parameters for command "
+                 + cmdChar + ": got 0, expected " + expectedCount);
+      }
+
+      if (numbers.size() % expectedCount != 0) {
+         throw new IllegalArgumentException("Invalid number of parameters for command "
+                 + cmdChar + ": got " + numbers.size()
+                 + ", expected a multiple of " + expectedCount);
       }
 
       int countOfSets = numbers.size() / expectedCount;
@@ -385,23 +419,26 @@ public class SVGPathParser {
       }
 
       return IntStream.range(0, countOfSets)
-              .mapToObj(setIndex -> parseParametersSet(commandType, viewport, setIndex, expectedCount, numbers));
+              .mapToObj(setIndex -> parseParametersSet(commandType, viewport, setIndex, expectedCount, numbers))
+              .flatMapToDouble(java.util.Arrays::stream)
+              .toArray();
    }
 
    /**
-    * Parses a list of parameters/numbers into a double array, handling optional units.
+    * Parses a single set of parameters from a list of number strings, applying the appropriate
+    * unit conversions based on the command type.
+    *
+    * @param commandType   the SVG path command type, used to determine how each parameter is converted
+    * @param viewport      the current viewport, used for converting length values with units
+    * @param setIndex      the index of the parameter set within the overall list of parameters
+    * @param expectedCount the expected number of parameters in a single set for this command
+    * @param numbers       the complete list of parameter strings extracted from the path data
+    * @return an array of doubles representing the converted parameters for the specified set
     */
-   private double[] parseParametersSet(
-           CommandType commandType,
-           Viewport viewport,
-           int setIndex,
-           int expectedCount,
-           List<String> numbers
-   ) {
+   private double[] parseParametersSet(CommandType commandType, Viewport viewport, int setIndex, int expectedCount, List<String> numbers) {
       return IntStream.range(0, expectedCount).mapToDouble(indexInSet -> {
          int numberIndex = setIndex * expectedCount + indexInSet;
          String number = numbers.get(numberIndex);
-
          switch (commandType.getParameterConverter(indexInSet)) {
             case PARSE_DOUBLE_PROTECTED:
                return ParserUtils.parseDoubleProtected(number);
