@@ -3,6 +3,7 @@
 # 1.5
  - Fix #68: Implicit line-to commands in SVG paths are not parsed correctly since version 1.4
  - Fix #78: The image size does not match the image width/height attributes
+ - Use docJGenerator 1.6.16
 
 # 1.4
  - Fix #61: The gradients which are not defined in a defs node are not taken into account
