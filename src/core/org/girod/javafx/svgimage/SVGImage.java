@@ -33,6 +33,7 @@ the project website at the project page on https://github.com/hervegirod/fxsvgim
 package org.girod.javafx.svgimage;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -61,6 +62,7 @@ public class SVGImage extends Group {
    private static SVGSnapshotParameters SNAPSHOT_PARAMS = null;
    private final Map<String, Node> nodes = new HashMap<>();
    private List<Animation> animations = new ArrayList<>();
+   private List<URL> stylesheets = new ArrayList<>();
    private final SVGContent content;
    private double currentScale = 1d;
    private Viewport viewport = null;
@@ -99,6 +101,24 @@ public class SVGImage extends Group {
     */   
    public File getFile() {
       return file;
+   }
+   
+   /**
+    * Set the stylesheets of the SVG content.
+    *
+    * @param stylesheets the stylesheets
+    */   
+   public void setSVGStylesheets(List<URL> stylesheets) {
+      this.stylesheets = stylesheets;
+   }   
+   
+   /**
+    * Return the stylesheets of the SVG content.
+    *
+    * @return the stylesheets
+    */   
+   public List<URL> getSVGStylesheets() {
+      return stylesheets;
    }
 
    /**
