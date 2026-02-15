@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021, 2022, 2025 Hervé Girod
+Copyright (c) 2021, 2022, 2025, 2026 Hervé Girod
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -38,7 +38,7 @@ import javafx.scene.layout.BorderPane;
  * The SVGImageRegion allows to use the image in a layout (for example a BorderPane, or a StackPane), and redimension
  * the image accordingly.
  *
- * @since 1.2
+ * @version 1.5
  */
 public class SVGImageRegion extends BorderPane {
    private final SVGImage svgImage;
@@ -55,6 +55,9 @@ public class SVGImageRegion extends BorderPane {
       this.setCenter(svgImage);
       this.setMinWidth(1d);
       this.setMinHeight(1d);
+      double width = svgImage.getViewportWidth();
+      double height = svgImage.getViewportHeight();
+      this.setPrefSize(width, height);
    }
 
    /**
