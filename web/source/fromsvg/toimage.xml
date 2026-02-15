@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<article desc="producing a JavaFX image">
+   <meta desc="This article presents how to produce an image from a SVGImage" />
+   The <javadoc api="api" path="org.girod.javafx.svgimage.SVGImage" member="toImage()" /> method allows to create a JavaFX image from the initial image. It is possible to
+   specify the width of the result by using one of the following methods:
+   <ul>
+      <li>The <javadoc api="api" path="org.girod.javafx.svgimage.SVGImage" member="toImage(double)" /> method will create a scaled JavaFX image from the initial image, using the
+         <code>width</code> parameter as the width of the resulting image</li>
+      <li>The <javadoc api="api" path="org.girod.javafx.svgimage.SVGImage" member="toImage(short, double)" /> method does the same thing, and allows to specify the
+         quality of the result</li>       
+      <li>The <javadoc api="api" path="org.girod.javafx.svgimage.SVGImage" member="toImageScaled(double, double)" /> method will create a scaled JavaFX image from the initial image</li>      
+      <li>The <javadoc api="api" path="org.girod.javafx.svgimage.SVGImage" member="toImageScaled(short, double, double)" /> method will create a scaled JavaFX image from the initial image, and allows to specify the
+         quality of the result</li>                          
+   </ul>
+   
+   <messageBox type="info">
+      If you use the <javadoc api="api" path="org.girod.javafx.svgimage.ScaleQuality" member="RENDER_QUALITY" /> value for the quality parameter, the result 
+      will be scaled at the SVG level <b>before</b> being converted to a JavaFX image.
+   </messageBox>
+   
+   <title title="setting the snapshot parameters" />
+   The <javadoc api="api" path="org.girod.javafx.svgimage.SVGImage" member="toImage(org.girod.javafx.svgimage.SVGSnapshotParameters)" /> method
+   allow to specify the parameters to use to produce the snapshot. 
+   
+   The <javadoc api="api" path="org.girod.javafx.svgimage.SVGSnapshotParameters" /> encapsulate the <javadoc api="JAVAFX" path="javafx.scene.SnapshotParameters" /> to use to produce the image.
+   
+   <title level="2"  title="default snapshot parameters" />
+   By default the <javadoc api="JAVAFX" path="javafx.scene.SnapshotParameters" />  used to generate the images will use a default <code>SnapshotParameters</code>
+   It is possible to set the parameters to use by using the following methods:
+   <ul>
+      <li>The <javadoc api="api" path="org.girod.javafx.svgimage.SVGImage" member="toImage(org.girod.javafx.svgimage.SVGSnapshotParameters)" /> </li>
+      <li>The <javadoc api="api" path="org.girod.javafx.svgimage.SVGImage" member="toImage(javafx.scene.SnapshotParameters)" /></li>                              
+   </ul>
+   It is possible to specify the default <code>SVGSnapshotParameters</code> to use when creating snapshots by using the
+   <javadoc api="api" path="org.girod.javafx.svgimage.SVGImage" member="setDefaultSnapshotParameters(org.girod.javafx.svgimage.SVGSnapshotParameters)" />
+   method.
+   
+   <title level="2" title="defining the viewport of the resulting image" />
+   The <javadoc api="api" path="org.girod.javafx.svgimage.SVGSnapshotParameters" member="setViewportType(short type)" /> allows to specify
+   which viewport to choose for the resulting image:
+   <ul>
+      <li>The <javadoc api="api" path="org.girod.javafx.svgimage.SVGSnapshotParameters" member="USE_CONTENT_SIZE" /> will use the viewport of the
+         content of the SVG image (and not use the explicit viewport if it is defined). This is the default value</li>
+      <li>The <javadoc api="api" path="org.girod.javafx.svgimage.SVGSnapshotParameters" member="USE_BEST_VIEWPORT_SIZE" /> will use the explicit viewport
+         which is set for the SVG image (if it is defined)</li>      
+   </ul>
+   For example, for the following SVG content:
+   <pre syntax="xml">
+      &lt;svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="#1f1f1f"&gt;
+         &lt;path d="M160-440v-80h640v80H160Z"/&gt;
+       &lt;/svg&gt;
+   </pre>
+   If you use the following code:
+   <pre syntax="java">
+      URL url = &lt;my SVG content&gt;
+      SVGImage result = SVGLoader.load(url);
+      Image img = result.toImage();      
+   </pre>
+   The width and height of the image will be (16 px, 2 px), which is the size of the path.
+   
+   If you use the following code:
+   <pre syntax="java">
+      URL url = &lt;my SVG content&gt;
+      SVGImage result = SVGLoader.load(url);
+      SVGSnapshotParameters params = new SVGSnapshotParameters();
+      params.setViewportType(SVGSnapshotParameters.USE_BEST_VIEWPORT_SIZE);
+      Image img = result.toImage(params);   
+   </pre>
+   The width and height of the image will be (24 px, 24 px), which is the size of the viewport.
+    
+   <title title="examples" />
+   <pre syntax="java">
+      SVGImage img = SVGLoader.load(&lt;my SVG file&gt;);
+      
+      // the resulting image will have a width of 100 pixels
+      Image fxImg = img.toImage(100); 
+      // the resulting image will be scaled by a 0.5 factor    
+      Image fxImg2 = img.toImageScaled(0.5d); 
+      // the resulting image will have a width of 50 pixels, but the image will be scaled at the SVG level before creating the image
+      Image fxImg2 = img.toImage(ScaleQuality.RENDER_QUALITY, 50); 
+   </pre>  
+  
+   <see id="SVGImage" />         
+   <cat id="fromsvg" />
+</article>
