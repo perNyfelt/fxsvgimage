@@ -2,6 +2,7 @@
 
 # 1.5
  - Fix #68: Implicit line-to commands in SVG paths are not parsed correctly since version 1.4
+ - Fix #75: Unable to load Material Symbols icons
  - Fix #78: The image size does not match the image width/height attributes
  - Use docJGenerator 1.6.16
 
