@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021, 2022, 2025 Hervé Girod
+Copyright (c) 2021, 2022, 2025, 2026 Hervé Girod
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -55,10 +55,10 @@ import org.girod.javafx.svgimage.xml.parsers.SVGLibraryException;
 /**
  * The resulting SVG image. It is a JavaFX Nodes tree.
  *
- * @version 1.3
+ * @version 1.5
  */
 public class SVGImage extends Group {
-   private static SnapshotParameters SNAPSHOT_PARAMS = null;
+   private static SVGSnapshotParameters SNAPSHOT_PARAMS = null;
    private final Map<String, Node> nodes = new HashMap<>();
    private List<Animation> animations = new ArrayList<>();
    private final SVGContent content;
@@ -143,21 +143,31 @@ public class SVGImage extends Group {
    }
 
    /**
-    * Set the default SnapshotParameters to use when creating a snapshot. The default is null, which means that a
+    * Set the default SnapshotParameters to use when creating snapshots. The default is null, which means that a
     * default SnapshotParameters will be created when creating a snapshot.
     *
     * @param params the default SnapshotParameters
     */
    public static void setDefaultSnapshotParameters(SnapshotParameters params) {
-      SNAPSHOT_PARAMS = params;
+      SNAPSHOT_PARAMS = new SVGSnapshotParameters(params);
    }
+   
+   /**
+    * Set the default SnapshotParameters to use when creating snapshots. The default is null, which means that a
+    * default SnapshotParameters will be created when creating a snapshot.
+    *
+    * @param params the default SnapshotParameters
+    */
+   public static void setDefaultSnapshotParameters(SVGSnapshotParameters params) {
+      SNAPSHOT_PARAMS = params;
+   }   
 
    /**
     * Return the default SnapshotParameters used when creating a snapshot.
     *
     * @return the default SnapshotParameters
     */
-   public static SnapshotParameters getDefaultSnapshotParameters() {
+   public static SVGSnapshotParameters getDefaultSnapshotParameters() {
       return SNAPSHOT_PARAMS;
    }
 
@@ -249,15 +259,37 @@ public class SVGImage extends Group {
          }
       }
    }
+   
+   /**
+    * Return the width of the image viewort. It will use the viewport to get the width if the viewport exists, else it willl get the width of the content.
+    *
+    * @return the width
+    */
+   public double getViewportWidth() {
+      if (viewport != null) {
+         return viewport.getBestWidth();
+      } else {
+         return getContentWidth();
+      }
+   }   
 
    /**
-    * Return the width of the image.
+    * Return the width of the image. Defer to {@link Viewport#getBestWidth()}.
     *
     * @return the width
     */
    public double getWidth() {
-      return this.getLayoutBounds().getWidth();
+      return getViewportWidth();
    }
+   
+   /**
+    * Return the width of the image content.
+    *
+    * @return the width
+    */
+   public double getContentWidth() {
+      return this.getLayoutBounds().getWidth();
+   }   
 
    /**
     * Return the width of the image, taking into account the scaling of the svg image.
@@ -269,13 +301,34 @@ public class SVGImage extends Group {
    }
 
    /**
-    * Return the height of the image.
+    * Return the height of the image. Defer to {@link Viewport#getBestHeight()}.
     *
     * @return the height
     */
    public double getHeight() {
-      return this.getLayoutBounds().getHeight();
+      return getViewportHeight();
    }
+   
+   /**
+    * Return the height of the image viewort. It will use the viewport to get the height if the viewport exists, else it willl get the height of the content.
+    *
+    * @return the height
+    */
+   public double getViewportHeight() {
+      if (viewport != null) {
+         return viewport.getBestHeight();
+      } else {
+         return getContentHeight();
+      }
+   }   
+   /**
+    * Return the height of the image content.
+    *
+    * @return the height
+    */
+   public double getContentHeight() {
+      return this.getLayoutBounds().getHeight();
+   }      
 
    /**
     * Return the height of the image, taking into account the scaling of the svg image.
@@ -316,20 +369,24 @@ public class SVGImage extends Group {
          this.setScaleY(scaleY);
          double finalWidth = initialWidth * scaleX;
          double finalHeight = initialHeight * scaleY;
-         SnapshotParameters params = SNAPSHOT_PARAMS;
-         Rectangle2D viewport = new Rectangle2D(0, 0, finalWidth, finalHeight);
+         SVGSnapshotParameters params = SNAPSHOT_PARAMS;
+         SnapshotParameters jfxParams;
+         Rectangle2D _viewport = new Rectangle2D(0, 0, finalWidth, finalHeight);
          if (params == null) {
-            params = new SnapshotParameters();
-            params.setViewport(viewport);
+            params = new SVGSnapshotParameters();
+            jfxParams = params.getSnapshotParameters();
+            jfxParams.setViewport(_viewport);
          } else {
-            params = new SnapshotParameters();
-            params.setCamera(SNAPSHOT_PARAMS.getCamera());
-            params.setDepthBuffer(SNAPSHOT_PARAMS.isDepthBuffer());
-            params.setTransform(SNAPSHOT_PARAMS.getTransform());
-            params.setFill(SNAPSHOT_PARAMS.getFill());
-            params.setViewport(viewport);
+            SnapshotParameters refParams = SNAPSHOT_PARAMS.getSnapshotParameters();
+            params = new SVGSnapshotParameters();
+            jfxParams = params.getSnapshotParameters();
+            jfxParams.setCamera(refParams.getCamera());
+            jfxParams.setDepthBuffer(refParams.isDepthBuffer());
+            jfxParams.setTransform(refParams.getTransform());
+            jfxParams.setFill(refParams.getFill());
+            jfxParams.setViewport(_viewport);
          }
-         WritableImage image = snapshotImpl(params);
+         WritableImage image = snapshotImpl(jfxParams);
          return image;
       }
    }
@@ -366,20 +423,23 @@ public class SVGImage extends Group {
          this.setScaleY(scaleY);
          double finalWidth = width;
          double finalHeight = initialHeight * scaleY;
-         SnapshotParameters params = SNAPSHOT_PARAMS;
-         Rectangle2D viewport = new Rectangle2D(0, 0, finalWidth, finalHeight);
+         SVGSnapshotParameters params = SNAPSHOT_PARAMS;
+         SnapshotParameters jfxParam;
+         Rectangle2D _viewport = new Rectangle2D(0, 0, finalWidth, finalHeight);
          if (params == null) {
-            params = new SnapshotParameters();
-            params.setViewport(viewport);
+            jfxParam = new SnapshotParameters();
+            jfxParam.setViewport(_viewport);
          } else {
-            params = new SnapshotParameters();
-            params.setCamera(SNAPSHOT_PARAMS.getCamera());
-            params.setDepthBuffer(SNAPSHOT_PARAMS.isDepthBuffer());
-            params.setTransform(SNAPSHOT_PARAMS.getTransform());
-            params.setFill(SNAPSHOT_PARAMS.getFill());
-            params.setViewport(viewport);
+            SnapshotParameters refParams = params.getSnapshotParameters();
+            jfxParam = new SnapshotParameters();
+            params = new SVGSnapshotParameters(jfxParam);
+            jfxParam.setCamera(refParams.getCamera());
+            jfxParam.setDepthBuffer(refParams.isDepthBuffer());
+            jfxParam.setTransform(refParams.getTransform());
+            jfxParam.setFill(refParams.getFill());
+            params.applyViewportType(this);
          }
-         WritableImage image = snapshotImpl(params);
+         WritableImage image = snapshotImpl(jfxParam);
          return image;
       }
    }
@@ -400,13 +460,28 @@ public class SVGImage extends Group {
     * @return the Image
     */
    public Image toImage() {
-      SnapshotParameters params = SNAPSHOT_PARAMS;
+      SVGSnapshotParameters params = SNAPSHOT_PARAMS;
       if (params == null) {
-         params = new SnapshotParameters();
+         params = new SVGSnapshotParameters();
       }
-      WritableImage image = snapshotImpl(params);
+      SnapshotParameters jfxParams = params.getSnapshotParameters();
+      params.applyViewportType(this);
+      WritableImage image = snapshotImpl(jfxParams);
       return image;
    }
+   
+   /**
+    * Convert the Node tree to an image.
+    *
+    * @param params the parameters
+    * @return the Image
+    */
+   public Image toImage(SVGSnapshotParameters params) {
+      SnapshotParameters jfxParams = params.getSnapshotParameters();
+      params.applyViewportType(this);
+      WritableImage image = snapshotImpl(jfxParams);
+      return image;
+   }   
 
    /**
     * Convert the Node tree to an image.
@@ -551,12 +626,13 @@ public class SVGImage extends Group {
     * @return true if the save was successful
     */
    public boolean snapshot(String format, File file) throws SVGLibraryException {
-      SnapshotParameters params = SNAPSHOT_PARAMS;
+      SVGSnapshotParameters params = SNAPSHOT_PARAMS;
       if (params == null) {
-         params = new SnapshotParameters();
-         params.setFill(Color.WHITE);
+         params = new SVGSnapshotParameters();
+         params.getSnapshotParameters().setFill(Color.WHITE);
       }
-      return snapshot(params, format, file);
+      params.applyViewportType(this);
+      return snapshot(params.getSnapshotParameters(), format, file);
    }
 
    private WritableImage snapshotImpl(final SnapshotParameters params) {
