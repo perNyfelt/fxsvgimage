@@ -22,7 +22,7 @@ For maven do the following:
     <dependency>
       <groupId>com.github.hervegirod</groupId>
       <artifactId>fxsvgimage</artifactId>
-      <version>1.4</version>
+      <version>1.5</version>
     </dependency>
 ```
 For gradle it would be
