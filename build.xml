@@ -117,6 +117,8 @@
             <include name="LICENSE"/>
             <include name="README.md"/>
             <include name="HISTORY.md"/>    
+            <include name="viewSvg.groovy"/>    
+            <include name="viewSvg.sh"/>   
          </fileset>    
          <fileset description="samples" dir=".">
             <include name="samples/**/*.*"/>
@@ -164,7 +166,9 @@
          <fileset description="misc" dir=".">
             <include name="LICENSE"/>
             <include name="README.md"/>
-            <include name="HISTORY.md"/>            
+            <include name="HISTORY.md"/>   
+            <include name="viewSvg.groovy"/>    
+            <include name="viewSvg.sh"/>   
             <include name="build.xml"/>
             <include name="pom.xml"/>            
          </fileset>
