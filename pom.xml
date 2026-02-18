@@ -9,7 +9,7 @@
    <name>fxsvgimage</name>
    <description>A small self-sufficient library which allows to convert a SVG file to a JavaFX Node tree or an Image (no dependencies)</description>
 
-   <url>https://github.com/perNyfelt/fxsvgimage/tree/maven_central</url>
+   <url>https://github.com/hervegirod/fxsvgimage</url>
 
    <licenses>
       <license>
@@ -35,9 +35,10 @@
    </developers>
 
    <scm>
-      <url>https://github.com/perNyfelt/fxsvgimage/tree/maven_central/</url>
-      <connection>scm:git:https://github.com/perNyfelt/fxsvgimage.git</connection>
-      <developerConnection>scm:git:https://github.com/perNyfelt/fxsvgimage.git</developerConnection>
+      <url>https://github.com/hervegirod/fxsvgimage</url>
+      <connection>scm:git:git://github.com/hervegirod/fxsvgimage.git</connection>
+      <developerConnection>scm:git:ssh://github.com:hervegirod/fxsvgimage.git</developerConnection>
+      <tag>HEAD</tag>
    </scm>
 
    <properties>
@@ -69,7 +70,7 @@
       <testSourceDirectory>${project.basedir}/test</testSourceDirectory>
       <testResources>
          <testResource>
-            <directory>${project.basedir}/src/test</directory>
+            <directory>${project.basedir}/test</directory>
             <excludes>
                <exclude>**/*.java</exclude>
             </excludes>
@@ -79,7 +80,7 @@
          <plugin>
             <groupId>org.codehaus.mojo</groupId>
             <artifactId>build-helper-maven-plugin</artifactId>
-            <version>3.5.0</version>
+            <version>3.6.1</version>
             <executions>
                <execution>
                   <phase>generate-sources</phase>
@@ -95,30 +96,9 @@
             </executions>
          </plugin>
          <plugin>
-            <artifactId>maven-antrun-plugin</artifactId>
-            <version>3.1.0</version>
-            <executions>
-               <execution>
-                  <id>copy_images</id>
-                  <phase>generate-test-resources</phase>
-                  <configuration>
-                     <target>
-                        <copy toDir="${project.build.testOutputDirectory}">
-                           <fileset dir="${project.build.testSourceDirectory}"
-                                    includes="org/girod/javafx/svgimage/**/*.svg"/>
-                        </copy>
-                     </target>
-                  </configuration>
-                  <goals>
-                     <goal>run</goal>
-                  </goals>
-               </execution>
-            </executions>
-         </plugin>
-         <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-source-plugin</artifactId>
-            <version>3.3.0</version>
+            <version>3.4.0</version>
             <executions>
                <execution>
                   <id>attach-sources</id>
@@ -131,7 +111,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-jar-plugin</artifactId>
-            <version>3.3.0</version>
+            <version>3.5.0</version>
             <configuration>
                <archive>
                   <manifestFile>${project.basedir}/src/core/manifest.mf</manifestFile>
@@ -141,7 +121,7 @@
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-javadoc-plugin</artifactId>
-            <version>3.6.3</version>
+            <version>3.12.0</version>
             <executions>
                <execution>
                   <id>attach-javadocs</id>
@@ -180,7 +160,7 @@
                <plugin>
                   <groupId>org.apache.maven.plugins</groupId>
                   <artifactId>maven-gpg-plugin</artifactId>
-                  <version>3.1.0</version>
+                  <version>3.2.8</version>
                   <executions>
                      <execution>
                         <id>sign-artifacts</id>
@@ -194,7 +174,7 @@
                <plugin>
                   <groupId>org.sonatype.central</groupId>
                   <artifactId>central-publishing-maven-plugin</artifactId>
-                  <version>0.9.0</version>
+                  <version>0.10.0</version>
                   <extensions>true</extensions>
                   <configuration>
                      <publishingServerId>central</publishingServerId>
