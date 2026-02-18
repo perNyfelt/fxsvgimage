@@ -32,7 +32,7 @@ repositories {
   maven { url 'https://jitpack.io' }
 }
 dependencies {
-  implementation 'com.github.hervegirod:fxsvgimage:1.4'
+  implementation 'com.github.hervegirod:fxsvgimage:1.5'
 }
 ```
 See https://jitpack.io/ for info on the syntax for other build systems such as sbt, leiningen etc.
