@@ -44,7 +44,7 @@
          </not>
       </condition>
       <property name="docGeneratorDirURL" value="https://downloads.sourceforge.net/project/docjgenerator/" />      
-      <property name="docGeneratorURL" value="${docGeneratorDirURL}/Version%201.6.10/docGenerator-bin-1.6.10.zip" />
+      <property name="docGeneratorURL" value="${docGeneratorDirURL}/Version%201.6.16/docGenerator-bin-1.6.16.zip" />
       <property name="docGeneratorDir" value="web/soft/"/>       
       <condition property="docgenerator.notexists">
          <not>
@@ -117,6 +117,8 @@
             <include name="LICENSE"/>
             <include name="README.md"/>
             <include name="HISTORY.md"/>    
+            <include name="viewSvg.groovy"/>    
+            <include name="viewSvg.sh"/>   
          </fileset>    
          <fileset description="samples" dir=".">
             <include name="samples/**/*.*"/>
@@ -164,7 +166,9 @@
          <fileset description="misc" dir=".">
             <include name="LICENSE"/>
             <include name="README.md"/>
-            <include name="HISTORY.md"/>            
+            <include name="HISTORY.md"/>   
+            <include name="viewSvg.groovy"/>    
+            <include name="viewSvg.sh"/>   
             <include name="build.xml"/>
             <include name="pom.xml"/>            
          </fileset>

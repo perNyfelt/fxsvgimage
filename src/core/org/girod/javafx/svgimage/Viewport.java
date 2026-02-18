@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021, 2022, 2024 Hervé Girod
+Copyright (c) 2021, 2022, 2024, 2026 Hervé Girod
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -32,12 +32,13 @@ the project website at the project page on https://github.com/hervegirod/fxsvgim
  */
 package org.girod.javafx.svgimage;
 
+import javafx.geometry.Rectangle2D;
 import javafx.scene.shape.Shape;
 
 /**
  * Represents the viewport.
  *
- * @version 1.2
+ * @version 1.5
  */
 public class Viewport extends Viewbox {
    private double scale = -1;
@@ -87,6 +88,15 @@ public class Viewport extends Viewbox {
       } else {
          return viewboxHeight;
       }
+   }
+
+   /**
+    * Return the Rectangle2D associated with the Viewport.
+    *
+    * @return the Rectangle2D
+    */
+   public Rectangle2D getRectangle2D() {
+      return new Rectangle2D(0, 0, getBestWidth(), getBestHeight());
    }
 
    /**

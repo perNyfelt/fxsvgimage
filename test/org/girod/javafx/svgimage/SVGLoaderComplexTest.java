@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2025, 2026 Hervé Girod
+Copyright (c) 2025, Hervé Girod
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -30,33 +30,50 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Alternatively if you have any questions about this project, you can visit
 the project website at the project page on https://github.com/hervegirod/fxsvgimage
  */
-package org.girod.javafx.svgimage.xml.parsers.xmltree;
+package org.girod.javafx.svgimage;
 
+import static org.junit.Assert.assertNotNull;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import java.net.URL;
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
 
 /**
- * Parser utilities for Unit tests.
+ * Unit tests for a complex svg file.
  *
- * @version 1.5
+ * @since 1.5
  */
-public class XMLParserTestUtils {
-   private XMLParserTestUtils() {
+public class SVGLoaderComplexTest {
+
+   public SVGLoaderComplexTest() {
    }
 
-   public static XMLRoot parse(URL url) {
-      SAXParserFactory saxfactory = SAXParserFactory.newInstance();
-      try {
-         saxfactory.setFeature("http://xml.org/sax/features/resolve-dtd-uris", false);
-         saxfactory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
-         saxfactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
-         SAXParser parser = saxfactory.newSAXParser();
-         XMLTreeHandler handler = new XMLTreeHandler(url);
-         parser.parse(url.openStream(), handler);
-         return handler.getRoot();
-      } catch (Exception e) {
-         return null;
-      }
+   @BeforeClass
+   public static void setUpClass() {
+   }
+
+   @AfterClass
+   public static void tearDownClass() {
+   }
+
+   @Before
+   public void setUp() {
+   }
+
+   @After
+   public void tearDown() {
+   }
+
+   /**
+    * Test of load method, of class SVGLoader. Test with a complex svg.
+    */
+   @Test
+   public void testComplexSVG() throws Exception {
+      System.out.println("SVGLoaderComplexTest : testComplexSVG");
+      URL url = this.getClass().getResource("Ghostscript_Tiger.svg");
+      SVGImage result = SVGLoader.load(url);
+      assertNotNull("SVGImage should not be null", result);
    }
 }

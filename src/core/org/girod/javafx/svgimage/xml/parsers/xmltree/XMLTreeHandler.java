@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021, 2022, 2025 Hervé Girod
+Copyright (c) 2021, 2022, 2025, 2026 Hervé Girod
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -32,6 +32,9 @@ the project website at the project page on https://github.com/hervegirod/fxsvgim
  */
 package org.girod.javafx.svgimage.xml.parsers.xmltree;
 
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,28 +46,40 @@ import org.xml.sax.ext.DefaultHandler2;
 /**
  * Parse an XML File and return the associated tree of Nodes.
  *
- * @version 1.3
+ * @version 1.5
  */
 public class XMLTreeHandler extends DefaultHandler2 {
+   private static final String STYLESHEET_TARGET = "xml-stylesheet";
+   private static final Pattern STYLESHEET_PAT = Pattern.compile("href=\"(?<href>[a-zA-Z_0-9\\.]+)\".*");
    private static final Pattern TRIM = Pattern.compile("(?<right>\\s+)?\\S.*\\S(?<left>\\s+)?");
    private XMLNode node = null;
    private final Stack<XMLNode> nodes = new Stack<>();
    private XMLRoot root = null;
    private String encoding = null;
    private StringBuilder buf = null;
+   private final URL url;
+   private final URL parentURL;
+   private final List<URL> stylesheets = new ArrayList<>();
 
    /**
     * Constructor.
+    *
+    * @param url the URL of the document
     */
-   public XMLTreeHandler() {
+   public XMLTreeHandler(URL url) {
+      this.url = url;
+      this.parentURL = FileUtils.getParentURL(url);
    }
 
    /**
     * Constructor.
     *
+    * @param url the URL of the document
     * @param encoding the encoding of the XML file
     */
-   public XMLTreeHandler(String encoding) {
+   public XMLTreeHandler(URL url, String encoding) {
+      this.url = url;
+      this.parentURL = FileUtils.getParentURL(url);
       this.encoding = encoding;
    }
 
@@ -76,13 +91,36 @@ public class XMLTreeHandler extends DefaultHandler2 {
    public XMLRoot getRoot() {
       return root;
    }
+   
+   /**
+    * Return the stylesheets.
+    *
+    * @return the stylesheets
+    */   
+   public List<URL> getStylesheets() {
+      return stylesheets;
+   }
+
+   @Override
+   public void processingInstruction(String target, String data) throws SAXException {
+      if (target.equals(STYLESHEET_TARGET)) {
+         Matcher m = STYLESHEET_PAT.matcher(data);
+         if (m.matches()) {
+            String href = m.group("href");
+            URL cssURL = FileUtils.getChildURL(parentURL, href);
+            if (FileUtils.exists(cssURL)) {
+               stylesheets.add(cssURL);
+            }
+         }
+      }
+
+   }
 
    /**
     * Receive notification of the beginning of an element.
     *
     * @param uri the Namespace URI
-    * @param localname the local name (without prefix), or the empty string if Namespace processing is not being
-    * performed
+    * @param localname the local name (without prefix), or the empty string if Namespace processing is not being performed
     * @param qname The qualified name (with prefix), or the empty string if qualified names are not available
     * @param attr the specified or defaulted attributes
     */

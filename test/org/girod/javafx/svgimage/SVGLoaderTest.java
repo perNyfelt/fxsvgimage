@@ -98,4 +98,16 @@ public class SVGLoaderTest {
       SVGImage result = SVGLoader.load(url);
       assertNotNull("SVGImage should not be null", result);
    }
+
+   /**
+    * Test of load method, of class SVGLoader. Test with joined parameters of multiple instances of same PathCommand.
+    */
+   @Test
+   public void testLoadURL4() throws Exception {
+      GlobalConfig.getInstance().setExceptionsHandling(ExceptionsHandling.PRINT_EXCEPTION_STACKTRACE);
+      System.out.println("SVGLoaderTest : testLoadURL4");
+      URL url = this.getClass().getResource("issue1_4.svg");
+      SVGImage result = SVGLoader.load(url);
+      assertNotNull("SVGImage should not be null", result);
+   }
 }

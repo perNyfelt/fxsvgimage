@@ -62,6 +62,7 @@ import javafx.scene.control.ToolBar;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.ScrollEvent;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
@@ -289,8 +290,10 @@ public class SVGBrowser extends Application {
             return;
          }
 
-         Group group = new Group(image);
-         MyStackPane content = new MyStackPane(group);
+         Group group = image;
+         MyStackPane content = new MyStackPane(image);
+         content.setPrefHeight(image.getViewportHeight());
+         content.setPrefWidth(image.getViewportWidth());
 
          content.setOnMouseDragged(e -> {
             double x = e.getX();
@@ -316,7 +319,7 @@ public class SVGBrowser extends Application {
          } else {
             tab = new Tab(file.getName(), scrollPane);
          }
-         content.allowLayoutChildren(false);
+         //content.allowLayoutChildren(false);
          content.setOnScroll(new EventHandler<ScrollEvent>() {
             @Override
             public void handle(ScrollEvent event) {

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2021, 2022, 2025 Hervé Girod
+Copyright (c) 2021, 2022, 2025, 2026 Hervé Girod
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -84,7 +84,7 @@ import org.xml.sax.SAXException;
 /**
  * This class allows to load a svg file and convert it to an Image or a JavaFX tree.
  *
- * @version 1.4
+ * @version 1.5
  */
 public class SVGLoader implements SVGTags {
    private final SVGContent content;
@@ -497,14 +497,14 @@ public class SVGLoader implements SVGTags {
          saxfactory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
          saxfactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
          SAXParser parser = saxfactory.newSAXParser();
-         XMLTreeHandler handler = new XMLTreeHandler();
+         XMLTreeHandler handler = new XMLTreeHandler(content.url);
          if (content.url != null) {
             parser.parse(content.url.openStream(), handler);
          } else {
             InputStream stream = new ByteArrayInputStream(content.content.getBytes());
             parser.parse(stream, handler);
          }
-         SVGImage img = walk(handler.getRoot());
+         SVGImage img = walk(handler.getRoot(), handler.getStylesheets());
          if (img != null) {
             if (context.hasAnimations()) {
                img.setAnimations(context.getAnimations());
@@ -557,7 +557,7 @@ public class SVGLoader implements SVGTags {
       }
    }
 
-   private SVGImage walk(XMLRoot xmlRoot) {
+   private SVGImage walk(XMLRoot xmlRoot, List<URL> styleSheets) {
       String name = xmlRoot.getName();
       if (name.equals(SVG)) {
          if (viewport == null) {
@@ -570,6 +570,7 @@ public class SVGLoader implements SVGTags {
             root.setViewport(viewport);
          }
       }
+      root.setSVGStylesheets(styleSheets);
       preparseStyles(xmlRoot);
       preparseClipping(xmlRoot);
       buildNode(xmlRoot, root);

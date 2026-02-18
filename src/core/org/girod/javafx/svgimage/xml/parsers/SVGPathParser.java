@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 import org.girod.javafx.svgimage.Viewport;
 import javafx.geometry.Point2D;
@@ -143,7 +144,7 @@ public class SVGPathParser {
       path.setContent(getContent());
       listPath.add(path);
       return listPath;
-   }   
+   }
 
    /**
     * Gets the content string after the length has been resolved and the viewport has been taken into account.
@@ -384,7 +385,7 @@ public class SVGPathParser {
    }
 
    /**
-    * Parses a string of parameters into a double array, handling optional units.
+    * Parses a string of parameters into a flat double array containing all parameter sets, handling optional units.
     */
    private double[] parseParameters(char cmdChar, CommandType commandType, Viewport viewport, String params, int expectedCount) {
       List<String> numbers = new ArrayList<>();
@@ -412,28 +413,45 @@ public class SVGPathParser {
                  + ", expected a multiple of " + expectedCount);
       }
 
-      double[] result = new double[numbers.size()];
-      for (int i = 0; i < numbers.size(); i++) {
-         String number;
-
-         number = numbers.get(i);
-         switch (commandType.getParameterConverter(i % expectedCount)) {
-            case PARSE_DOUBLE_PROTECTED:
-               result[i] = ParserUtils.parseDoubleProtected(number);
-               break;
-            case PARSE_LENGTH_HEIGHT:
-               result[i] = LengthParser.parseLength(number, false, viewport);
-               break;
-            case PARSE_LENGTH_WIDTH:
-               result[i] = LengthParser.parseLength(number, true, viewport);
-               break;
-            case PARSE_NOT:
-               result[i] = Double.parseDouble(numbers.get(i));
-               break;
-            default:
-               break;
-         }
+      int countOfSets = numbers.size() / expectedCount;
+      if (countOfSets < 1) {
+         throw new IllegalArgumentException("Invalid number of parameters for command, expected multiple of " + expectedCount);
       }
-      return result;
+
+      return IntStream.range(0, countOfSets)
+              .mapToObj(setIndex -> parseParametersSet(commandType, viewport, setIndex, expectedCount, numbers))
+              .flatMapToDouble(java.util.Arrays::stream)
+              .toArray();
    }
+
+   /**
+    * Parses a single set of parameters from a list of number strings, applying the appropriate
+    * unit conversions based on the command type.
+    *
+    * @param commandType   the SVG path command type, used to determine how each parameter is converted
+    * @param viewport      the current viewport, used for converting length values with units
+    * @param setIndex      the index of the parameter set within the overall list of parameters
+    * @param expectedCount the expected number of parameters in a single set for this command
+    * @param numbers       the complete list of parameter strings extracted from the path data
+    * @return an array of doubles representing the converted parameters for the specified set
+    */
+   private double[] parseParametersSet(CommandType commandType, Viewport viewport, int setIndex, int expectedCount, List<String> numbers) {
+      return IntStream.range(0, expectedCount).mapToDouble(indexInSet -> {
+         int numberIndex = setIndex * expectedCount + indexInSet;
+         String number = numbers.get(numberIndex);
+         switch (commandType.getParameterConverter(indexInSet)) {
+            case PARSE_DOUBLE_PROTECTED:
+               return ParserUtils.parseDoubleProtected(number);
+            case PARSE_LENGTH_HEIGHT:
+               return LengthParser.parseLength(number, false, viewport);
+            case PARSE_LENGTH_WIDTH:
+               return LengthParser.parseLength(number, true, viewport);
+            case PARSE_NOT:
+               return Double.parseDouble(number);
+            default:
+               return 0D;
+         }
+      }).toArray();
+   }
+
 }
