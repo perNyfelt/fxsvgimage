@@ -174,6 +174,9 @@ class FileUtils {
     * @return the parent URL
     */
    static URL getParentURL(URL url) {
+      if (url == null) {
+         return null;
+      }
       try {
          if (url.getFile() != null) {
             String protocol = url.getProtocol();
