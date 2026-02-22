@@ -16,6 +16,11 @@
          <url>https://raw.githubusercontent.com/hervegirod/fxsvgimage/refs/heads/main/LICENSE</url>
          <distribution>repo</distribution>
       </license>
+      <license>
+         <name>Apache License, Version 2.0 License</name>
+         <url>https://raw.githubusercontent.com/hervegirod/fxsvgimage/refs/heads/main/APACHE_LICENSE</url>
+         <distribution>repo</distribution>
+      </license>      
    </licenses>
 
    <developers>
