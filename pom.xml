@@ -87,6 +87,12 @@
                <include>**/*.properties</include>
             </includes>
          </resource>
+         <resource>
+            <directory>${project.basedir}/src/sac</directory>
+            <includes>
+               <include>**/*.properties</include>
+            </includes>
+         </resource>
       </resources>
       <plugins>
          <plugin>
